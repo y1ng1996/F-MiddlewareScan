@@ -106,15 +106,15 @@ def scan_discern(scan_type,host,port):
                 return mark_info[0]
 def scan_vul(scan_type,host,port):
     vul_plugin = read_config("plugin")
-    try:
-        for plugin_name in vul_plugin[scan_type]:
+    for plugin_name in vul_plugin[scan_type]:
+        try
             req = __import__(plugin_name)
             log(plugin_name,host,port)
             vul_data = req.check(host,port,timeout)
             if vul_data.split("|")[0].upper()=="YES":
                 log(scan_type,host,port,vul_data.split("|")[1])
-    except Exception,e:
-        pass
+        except:
+            continue
 def get_ip_list(ip):
     ip_list = []
     iptonum = lambda x:sum([256**j*int(i) for j,i in enumerate(x.split('.')[::-1])])
