@@ -8,11 +8,13 @@ import threading
 import socket
 import urllib2
 import time
+import ssl
 import os
 
 queue = Queue.Queue()
 sys.path.append("plugins")
 mutex = threading.Lock()
+ssl._create_default_https_context = ssl._create_unverified_context
 timeout = 10
 class ThreadNum(threading.Thread):
     def __init__(self,queue):
