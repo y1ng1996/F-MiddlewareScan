@@ -107,7 +107,7 @@ def scan_discern(scan_type,host,port):
 def scan_vul(scan_type,host,port):
     vul_plugin = read_config("plugin")
     for plugin_name in vul_plugin[scan_type]:
-        try
+        try:
             req = __import__(plugin_name)
             log(plugin_name,host,port)
             vul_data = req.check(host,port,timeout)
