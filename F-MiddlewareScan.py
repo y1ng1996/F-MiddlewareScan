@@ -14,27 +14,38 @@ import os
 queue = Queue.Queue()
 sys.path.append("plugins")
 mutex = threading.Lock()
-ssl._create_default_https_context = ssl._create_unverified_context
 timeout = 10
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 class ThreadNum(threading.Thread):
     def __init__(self,queue):
         threading.Thread.__init__(self)
         self.queue = queue
     def run(self):
         while True:
-            queue_task = self.queue.get()
-            task_type,task_host,task_port = queue_task.split(":")
-            if task_type == 'portscan':
-                port_status = scan_port(task_type,task_host,task_port)
-                if port_status == True:
-                    queue.put(":".join(['discern',task_host,task_port]))
-            elif task_type == 'discern':
-                discern_type = scan_discern(task_type,task_host,task_port)
-                if discern_type:
-                    queue.put(":".join([discern_type,task_host,task_port]))
-            else:
-                scan_vul(task_type,task_host,task_port)
-            self.queue.task_done()
+            try:
+                if queue.empty():break
+                queue_task = self.queue.get()
+            except:
+                break
+            try:
+                task_type,task_host,task_port = queue_task.split(":")
+                if task_type == 'portscan':
+                    port_status = scan_port(task_type,task_host,task_port)
+                    if port_status == True:
+                        queue.put(":".join(['discern',task_host,task_port]))
+                elif task_type == 'discern':
+                    discern_type = scan_discern(task_type,task_host,task_port)
+                    if discern_type:
+                        queue.put(":".join([discern_type,task_host,task_port]))
+                else:
+                    scan_vul(task_type,task_host,task_port)
+            except:
+                continue
 def scan_port(task_type,host,port):
     try:
         socket.setdefaulttimeout(timeout/2)
@@ -153,6 +164,20 @@ def get_ip_list(ip):
         else:
             print "-h wrong format"
     return ip_list
+def t_join(m_count):
+    tmp_count = 0
+    i = 0
+    while True:
+        time.sleep(1)
+        ac_count = threading.activeCount()
+        if ac_count < m_count and ac_count == tmp_count:
+            i+=1
+        else:
+            i = 0
+        tmp_count = ac_count
+        #print ac_count,queue.qsize()
+        if (queue.empty() and threading.activeCount() <= 1) or i > 5:
+            break
 def put_queue(ip_list,port_list):
     for ip in ip_list:
         for port in port_list:
@@ -193,7 +218,7 @@ Usage: python F-MiddlewareScan.py -h 192.168.1 [-p 7001,8080] [-m 50] [-t 10]
                 t = ThreadNum(queue)
                 t.setDaemon(True)
                 t.start()
-            queue.join()
+            t_join(m_count)
     except Exception,e:
         print msg
 
