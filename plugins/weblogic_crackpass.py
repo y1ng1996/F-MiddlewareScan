@@ -13,10 +13,7 @@ def check(host,port,timeout):
             try:
                 PostStr='j_username=%s&j_password=%s&j_character_encoding=UTF-8'%(user,password)
                 request = opener.open(url+'/console/j_security_check',PostStr)
-                #request.add_header("Cookie",cookies)
-                #res = urllib2.urlopen(request,timeout=timeout)
                 res_html = request.read()
-                print res_html
             except urllib2.HTTPError,e:
                 return 'NO'
             except urllib2.URLError,e:
